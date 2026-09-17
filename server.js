@@ -120,10 +120,31 @@ app.post("/api/authorize", async (req, res) => {
 });
 
 app.get("/api/authorize", (req, res) => {
-  res.status(405).json({
-    error: "use POST with plate and gateId",
-    example: { plate: "ABC123", gateId: "garage-1" }
-  });
+  const plate = req.query.plate;
+  const id = req.query.gateId || "garage-1";
+
+  if (!plate) {
+    return res.status(400).json({
+      error: "include plate in the URL",
+      example: "/api/authorize?plate=ABC123&gateId=garage-1"
+    });
+  }
+
+  if (!gates[id]) {
+    return res.status(404).json({ error: "unknown gate" });
+  }
+
+  findActiveBooking(plate)
+    .then(booking => {
+      if (!booking) {
+        return res.status(403).json({ authorized: false, reason: "no active pass for that plate" });
+      }
+
+      gates[id].shouldOpen = true;
+      gates[id].lastPlate = booking.plate;
+      res.json({ authorized: true, name: booking.name, expiresAt: booking.expires_at });
+    })
+    .catch(error => res.status(500).json({ error: error.message }));
 });
 
 app.get("/api/gate-status", (req, res) => {
