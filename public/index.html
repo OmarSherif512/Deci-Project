@@ -726,6 +726,23 @@
     return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
   }
 
+  function showBooking(booking) {
+    document.getElementById("confName").textContent = booking.name;
+    document.getElementById("confPlate").textContent = booking.plate;
+    document.getElementById("confExpiry").textContent = formatDate(new Date(booking.expiresAt));
+    document.getElementById("confirmation").style.display = "block";
+  }
+
+  const savedBooking = localStorage.getItem("parkwell-last-booking");
+  if (savedBooking) {
+    try {
+      const booking = JSON.parse(savedBooking);
+      if (new Date(booking.expiresAt).getTime() > Date.now()) showBooking(booking);
+    } catch (err) {
+      localStorage.removeItem("parkwell-last-booking");
+    }
+  }
+
   renderGarageBoard();
 
   document.getElementById("bookingForm").addEventListener("submit", async function (e) {
@@ -758,10 +775,8 @@
 
       const booking = await res.json();
 
-      document.getElementById("confName").textContent = booking.name;
-      document.getElementById("confPlate").textContent = booking.plate;
-      document.getElementById("confExpiry").textContent = formatDate(new Date(booking.expiresAt));
-      document.getElementById("confirmation").style.display = "block";
+      showBooking(booking);
+      localStorage.setItem("parkwell-last-booking", JSON.stringify(booking));
 
       document.getElementById("bookingForm").reset();
       document.getElementById("days").value = 1;
