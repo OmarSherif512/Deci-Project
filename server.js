@@ -119,6 +119,13 @@ app.post("/api/authorize", async (req, res) => {
   res.json({ authorized: true, name: booking.name, expiresAt: booking.expires_at });
 });
 
+app.get("/api/authorize", (req, res) => {
+  res.status(405).json({
+    error: "use POST with plate and gateId",
+    example: { plate: "ABC123", gateId: "garage-1" }
+  });
+});
+
 app.get("/api/gate-status", (req, res) => {
   const id = req.query.gateId || "garage-1";
   const gate = gates[id];
