@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParkWell — Reserve a garage spot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --asphalt:#17181A;
+    --asphalt-2:#232527;
+    --concrete:#EAE6DA;
+    --paper:#F8F4E9;
+    --yellow:#FFC53D;
+    --ink:#17181A;
+    --ink-soft:#6b655c;
+    --green:#00C853;
+    --green-dim:#0e2a1a;
+    --red:#FF4136;
+    --red-dim:#33130f;
+    --divider:#d9d2c0;
+    --radius:3px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  ::selection{ background:var(--yellow); color:var(--ink); }
+
+  body{
+    margin:0;
+    background:var(--concrete);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    line-height:1.55;
+  }
+
+  h1, h2, h3{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+    margin:0;
+  }
+
+  a{ color:inherit; }
+
+  button, input, select{ font:inherit; }
+
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+
+  .wrap{
+    max-width:1080px;
+    margin:0 auto;
+    padding:0 28px;
+  }
+
+  .hazard{
+    height:8px;
+    background-image:repeating-linear-gradient(-45deg, var(--yellow) 0 14px, var(--asphalt) 14px 28px);
+    animation:hazard-scroll 4s linear infinite;
+  }
+
+  @keyframes hazard-scroll{
+    from{ background-position:0 0; }
+    to{ background-position:-39.6px 0; }
+  }
+
+  header.site{
+    background:var(--asphalt);
+    color:#fff;
+    padding:22px 0;
+  }
+
+  header.site .wrap{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:800;
+    font-size:24px;
+    text-transform:uppercase;
+  }
+
+  .brand .mark{
+    width:34px;
+    height:34px;
+    background:var(--yellow);
+    color:var(--asphalt);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:800;
+    font-size:20px;
+    transform:rotate(-2deg);
+    transition:transform 0.25s ease;
+  }
+
+  .brand:hover .mark{ transform:rotate(6deg) scale(1.1); }
+
+  header.site nav{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:#a29c8f;
+  }
+
+  .hero{
+    background:var(--asphalt-2);
+    color:#fff;
+    padding:76px 0 84px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .hero .wrap{
+    display:grid;
+    grid-template-columns:1.15fr 0.85fr;
+    gap:50px;
+    align-items:center;
+  }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--yellow);
+    margin-bottom:16px;
+  }
+
+  .hero h1{
+    font-size:clamp(40px, 5.5vw, 66px);
+    line-height:0.95;
+    color:#fff;
+  }
+
+  .hero p{
+    color:#b9b2a3;
+    font-size:17px;
+    max-width:40ch;
+    margin-top:20px;
+  }
+
+  .hero-stub{
+    background:var(--paper);
+    color:var(--ink);
+    padding:26px 24px;
+    transform:rotate(2deg);
+    position:relative;
+    box-shadow:0 18px 40px rgba(0,0,0,0.35);
+    transition:transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
+    cursor:default;
+  }
+
+  .hero-stub:hover{
+    transform:rotate(7deg) scale(1.06);
+    box-shadow:0 26px 54px rgba(0,0,0,0.45);
+  }
+
+  .hero-stub::before, .hero-stub::after{
+    content:"";
+    position:absolute;
+    left:-9px;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    background:var(--asphalt-2);
+  }
+
+  .hero-stub::before{ top:-9px; }
+  .hero-stub::after{ bottom:-9px; }
+
+  .hero-stub .stub-row{
+    display:flex;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    border-bottom:1px dashed #cfc7b4;
+    padding-bottom:10px;
+    margin-bottom:10px;
+  }
+
+  .hero-stub h3{
+    font-size:28px;
+    line-height:1;
+  }
+
+  .hero-stub p{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin:10px 0 0;
+  }
+
+  section{
+    padding:64px 0;
+  }
+
+  section.dark{
+    background:var(--asphalt);
+    color:#fff;
+  }
+
+  .section-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:20px;
+    margin-bottom:32px;
+    flex-wrap:wrap;
+  }
+
+  .section-head h2{ font-size:32px; }
+
+  .section-head p{
+    color:var(--ink-soft);
+    font-size:15px;
+    margin:0;
+    max-width:32ch;
+  }
+
+  section.dark .section-head p{ color:#9c9689; }
+
+  .steps{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:0;
+    border-top:1px solid var(--divider);
+    border-bottom:1px solid var(--divider);
+  }
+
+  .step{
+    padding:28px 26px;
+    border-right:1px solid var(--divider);
+    transition:background 0.2s ease;
+  }
+
+  .step:hover{ background:rgba(0,0,0,0.03); }
+
+  .step:last-child{ border-right:none; }
+
+  .step .num{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--yellow);
+    background:var(--asphalt);
+    display:inline-block;
+    padding:2px 8px;
+    font-size:13px;
+    margin-bottom:14px;
+  }
+
+  .step h3{
+    font-size:19px;
+    text-transform:none;
+    letter-spacing:0;
+    margin-bottom:8px;
+  }
+
+  .step p{
+    font-size:14px;
+    color:var(--ink-soft);
+    margin:0;
+  }
+
+  .ticket{
+    background:var(--paper);
+    border:1px solid var(--divider);
+    display:grid;
+    grid-template-columns:1fr 240px;
+    position:relative;
+  }
+
+  .ticket::after{
+    content:"";
+    position:absolute;
+    top:0;
+    bottom:0;
+    right:240px;
+    width:0;
+    border-left:2px dashed #cfc7b4;
+  }
+
+  .ticket-form{
+    padding:36px;
+  }
+
+  .field{
+    margin-bottom:20px;
+  }
+
+  .field label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    margin-bottom:8px;
+    color:var(--ink-soft);
+  }
+
+  .field input, .field select{
+    width:100%;
+    padding:12px 13px;
+    border:1px solid #c7bfa9;
+    border-radius:2px;
+    font-size:15px;
+    background:#fff;
+    color:var(--ink);
+  }
+
+  .field input:focus, .field select:focus{
+    outline:2px solid var(--yellow);
+    outline-offset:1px;
+    border-color:var(--yellow);
+  }
+
+  .field-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+
+  .buy-btn{
+    margin-top:4px;
+    background:var(--asphalt);
+    color:#fff;
+    border:none;
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    font-size:17px;
+    padding:15px 20px;
+    border-radius:2px;
+    cursor:pointer;
+    width:100%;
+    transition:background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  }
+
+  .buy-btn:hover{
+    background:#000;
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px rgba(0,0,0,0.28);
+  }
+
+  .buy-btn:active{
+    transform:translateY(0);
+    box-shadow:none;
+  }
+
+  .ticket-stub{
+    padding:36px 26px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:13px;
+    gap:14px;
+  }
+
+  .ticket-stub .stub-mark{
+    width:48px;
+    height:48px;
+    border:2px solid var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:800;
+    font-size:22px;
+    transform:rotate(-3deg);
+  }
+
+  .error-msg{
+    color:var(--red);
+    font-size:13.5px;
+    font-weight:600;
+    margin-top:2px;
+    margin-bottom:14px;
+    display:none;
+  }
+
+  .confirmation{
+    display:none;
+    margin-top:24px;
+    background:var(--asphalt);
+    color:#fff;
+    padding:26px 30px;
+    position:relative;
+  }
+
+  .confirmation::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height:6px;
+    background-image:repeating-linear-gradient(-45deg, var(--yellow) 0 14px, var(--asphalt) 14px 28px);
+    animation:hazard-scroll 4s linear infinite;
+  }
+
+  .confirmation h3{
+    color:#fff;
+    font-size:20px;
+    margin:8px 0 18px;
+  }
+
+  .confirmation .grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:20px;
+  }
+
+  .confirmation .grid div span{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:#8f897c;
+    margin-bottom:5px;
+  }
+
+  .confirmation .grid div strong{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:17px;
+    font-weight:500;
+  }
+
+  .board{
+    border-top:1px solid #3a3c3e;
+  }
+
+  .garage-row{
+    display:grid;
+    grid-template-columns:220px 1fr 140px;
+    gap:24px;
+    align-items:center;
+    padding:20px 24px;
+    margin:0 -24px;
+    border-bottom:1px solid #3a3c3e;
+    transition:background 0.2s ease, padding 0.2s ease;
+  }
+
+  .garage-row:hover{
+    background:rgba(255,255,255,0.04);
+    padding-left:32px;
+  }
+
+  .garage-name{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:600;
+    font-size:19px;
+    text-transform:uppercase;
+  }
+
+  .garage-name small{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    text-transform:none;
+    color:#8f897c;
+    font-size:12px;
+    margin-top:3px;
+    letter-spacing:0;
+  }
+
+  .meter{
+    display:flex;
+    gap:3px;
+  }
+
+  .meter i{
+    flex:1;
+    height:18px;
+    background:#3a3c3e;
+  }
+
+  .meter i.filled{ background:#54504a; }
+  .meter i.open{ background:var(--green); box-shadow:0 0 8px rgba(0,200,83,0.5); }
+
+  .status{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:15px;
+    padding:8px 4px;
+    text-align:right;
+  }
+
+  .status.full{ color:var(--red); text-shadow:0 0 10px rgba(255,65,54,0.5); }
+  .status.open{ color:var(--green); text-shadow:0 0 10px rgba(0,200,83,0.5); }
+
+  footer{
+    padding:30px 0;
+    text-align:center;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    background:var(--asphalt);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .hazard, .confirmation::before{ animation:none; }
+    .hero-stub, .buy-btn, .garage-row, .step, .brand .mark{ transition:none; }
+  }
+
+  @media (max-width:760px){
+    .hero .wrap{ grid-template-columns:1fr; }
+    .hero-stub{ order:-1; transform:rotate(0); max-width:320px; margin:0 auto; }
+    .steps{ grid-template-columns:1fr; }
+    .step{ border-right:none; border-bottom:1px solid var(--divider); }
+    .step:last-child{ border-bottom:none; }
+    .ticket{ grid-template-columns:1fr; }
+    .ticket::after{ display:none; }
+    .ticket-stub{ border-top:2px dashed #cfc7b4; }
+    .field-row{ grid-template-columns:1fr; }
+    .garage-row{ grid-template-columns:1fr; }
+    .status{ text-align:left; }
+    .confirmation .grid{ grid-template-columns:1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <div class="brand"><span class="mark">P</span>ParkWell</div>
+    <nav class="mono">SIX GARAGES · LIVE COUNTS</nav>
+  </div>
+</header>
+<div class="hazard"></div>
+
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow mono">// NO ASSIGNED GARAGE</div>
+      <h1>Buy the pass.<br>Pick the garage.<br>Any gate we run.</h1>
+      <p>One pass covers every ParkWell garage in the city. Check the board, drive to whichever one has room, and your plate does the rest.</p>
+    </div>
+    <div class="hero-stub">
+      <div class="stub-row"><span>ParkWell Pass</span><span>No. 0417</span></div>
+      <h3>ADMIT ONE VEHICLE</h3>
+      <p>VALID AT ANY GARAGE · SCAN PLATE ON ARRIVAL</p>
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <h2>How it works</h2>
+      <p>Three steps, no gate reserved in advance.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="num">01</span>
+        <h3>Buy your pass</h3>
+        <p>Give us your name, plate, and how many days you need. No garage picked yet.</p>
+      </div>
+      <div class="step">
+        <span class="num">02</span>
+        <h3>Check the board</h3>
+        <p>See which garages have room right now and skip the ones running full.</p>
+      </div>
+      <div class="step">
+        <span class="num">03</span>
+        <h3>Scan in at the gate</h3>
+        <p>Pull up to any open garage. Your plate clears the gate, no ticket needed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Buy a pass</h2>
+      <p>Not tied to one garage — good anywhere we have room.</p>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-form">
+        <form id="bookingForm">
+          <div class="field-row">
+            <div class="field">
+              <label for="fullName">Name</label>
+              <input type="text" id="fullName" placeholder="Jordan Reyes" required>
+            </div>
+            <div class="field">
+              <label for="plate">License plate</label>
+              <input type="text" id="plate" placeholder="ABC 1234" required>
+            </div>
+          </div>
+          <div class="field">
+            <label for="days">Number of days</label>
+            <input type="number" id="days" min="1" max="30" value="1" required>
+          </div>
+          <div class="error-msg" id="formError"></div>
+          <button type="submit" class="buy-btn">Reserve spot</button>
+        </form>
+      </div>
+      <div class="ticket-stub">
+        <div class="stub-mark">P</div>
+        <div>Park at any garage on the board. Pick one when you're actually driving over.</div>
+      </div>
+    </div>
+
+    <div class="confirmation" id="confirmation">
+      <h3>Pass reserved</h3>
+      <div class="grid">
+        <div><span>Name</span><strong id="confName"></strong></div>
+        <div><span>Plate</span><strong id="confPlate"></strong></div>
+        <div><span>Valid until</span><strong id="confExpiry"></strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Arriving now?</h2>
+      <p>Enter your plate to open the gate at a garage.</p>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-form">
+        <form id="gateForm">
+          <div class="field-row">
+            <div class="field">
+              <label for="gatePlate">License plate</label>
+              <input type="text" id="gatePlate" placeholder="ABC 1234" required>
+            </div>
+            <div class="field">
+              <label for="gateId">Garage</label>
+              <select id="gateId">
+                <option value="garage-1">Garage 1 — Downtown Core</option>
+              </select>
+            </div>
+          </div>
+          <div class="error-msg" id="gateError"></div>
+          <button type="submit" class="buy-btn">Open gate</button>
+        </form>
+      </div>
+      <div class="ticket-stub">
+        <div class="stub-mark">P</div>
+        <div>The gate checks your plate against active passes and opens automatically once your car reaches the sensor.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="dark">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Garages we manage</h2>
+      <p>Live spot counts — skip the full ones and head straight to what's open.</p>
+    </div>
+    <div class="board" id="garageBoard"></div>
+  </div>
+</section>
+
+<footer>
+  PARKWELL — RESERVE AHEAD, PARK WITHOUT THE GUESSWORK.
+</footer>
+
+<script>
+  const BACKEND_URL = "https://your-backend.onrender.com";
+
+  const garages = [
+    { id: 1, name: "Garage 1", location: "Downtown Core", total: 40, occupied: 40 },
+    { id: 2, name: "Garage 2", location: "Riverside Lot", total: 30, occupied: 30 },
+    { id: 3, name: "Garage 3", location: "Uptown Deck", total: 25, occupied: 20 },
+    { id: 4, name: "Garage 4", location: "Airport West", total: 60, occupied: 53 },
+    { id: 5, name: "Garage 5", location: "Stadium North", total: 50, occupied: 12 },
+    { id: 6, name: "Garage 6", location: "Old Mill District", total: 20, occupied: 6 }
+  ];
+
+  function openSpots(garage) {
+    return garage.total - garage.occupied;
+  }
+
+  function renderGarageBoard() {
+    const board = document.getElementById("garageBoard");
+    board.innerHTML = "";
+
+    garages.forEach(garage => {
+      const open = openSpots(garage);
+      const isFull = open <= 0;
+
+      const row = document.createElement("div");
+      row.className = "garage-row";
+
+      const segments = 12;
+      const filledSegments = Math.round((garage.occupied / garage.total) * segments);
+      let meterHtml = "";
+      for (let i = 0; i < segments; i++) {
+        meterHtml += `<i class="${i < filledSegments ? "filled" : "open"}"></i>`;
+      }
+
+      row.innerHTML = `
+        <div class="garage-name">${garage.name}<small>${garage.location}</small></div>
+        <div class="meter">${meterHtml}</div>
+        <div class="status ${isFull ? "full" : "open"}">${isFull ? "FULL" : open + " OPEN"}</div>
+      `;
+      board.appendChild(row);
+    });
+  }
+
+  function addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+  }
+
+  function formatDate(date) {
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  }
+
+  renderGarageBoard();
+
+  document.getElementById("bookingForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const errorBox = document.getElementById("formError");
+    errorBox.style.display = "none";
+
+    const name = document.getElementById("fullName").value.trim();
+    const plate = document.getElementById("plate").value.trim().toUpperCase();
+    const days = parseInt(document.getElementById("days").value, 10);
+
+    if (!days || days < 1) {
+      errorBox.textContent = "Enter at least one day.";
+      errorBox.style.display = "block";
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, plate, days })
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Could not save the booking.");
+      }
+
+      const booking = await res.json();
+
+      document.getElementById("confName").textContent = booking.name;
+      document.getElementById("confPlate").textContent = booking.plate;
+      document.getElementById("confExpiry").textContent = formatDate(new Date(booking.expiresAt));
+      document.getElementById("confirmation").style.display = "block";
+
+      document.getElementById("bookingForm").reset();
+      document.getElementById("days").value = 1;
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = "block";
+    }
+  });
+
+  document.getElementById("gateForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const errorBox = document.getElementById("gateError");
+    errorBox.style.display = "none";
+
+    const plate = document.getElementById("gatePlate").value.trim().toUpperCase();
+    const gateId = document.getElementById("gateId").value;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/authorize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plate, gateId })
+      });
+
+      const body = await res.json();
+
+      if (!res.ok || !body.authorized) {
+        errorBox.textContent = body.reason || "That plate doesn't have an active pass.";
+        errorBox.style.display = "block";
+        return;
+      }
+
+      errorBox.style.display = "none";
+      alert(`Welcome back, ${body.name}. The gate will open when you reach the sensor.`);
+      document.getElementById("gateForm").reset();
+    } catch (err) {
+      errorBox.textContent = "Could not reach the gate system.";
+      errorBox.style.display = "block";
+    }
+  });
+</script>
+
+</body>
+</html>
