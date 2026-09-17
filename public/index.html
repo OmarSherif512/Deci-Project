@@ -753,7 +753,7 @@
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || "Could not save the booking.");
+        throw new Error(body.error || `Booking server returned ${res.status}.`);
       }
 
       const booking = await res.json();
@@ -766,7 +766,9 @@
       document.getElementById("bookingForm").reset();
       document.getElementById("days").value = 1;
     } catch (err) {
-      errorBox.textContent = err.message;
+      errorBox.textContent = err instanceof TypeError
+        ? "Could not reach the booking server. Check that the Vercel deployment is live."
+        : err.message;
       errorBox.style.display = "block";
     }
   });
