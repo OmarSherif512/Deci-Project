@@ -11,6 +11,10 @@ const gates = {
   "garage-1": { shouldOpen: false, lastPlate: null }
 };
 
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true });
+});
+
 function normalizePlate(plate) {
   return String(plate || "").trim().toUpperCase().replace(/\s+/g, "");
 }
@@ -80,6 +84,11 @@ app.get("/api/gate-status", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`ParkWell backend running on port ${PORT}`);
-});
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`ParkWell backend running on port ${PORT}`);
+  });
+}
+
+export default app;
